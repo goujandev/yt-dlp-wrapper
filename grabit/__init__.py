@@ -15,6 +15,6 @@ You should have received a copy of the GNU General Public License along with
 this program. If not, see <https://www.gnu.org/licenses/>.
 """
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 APP_NAME = "GrabIt"
 ORG_NAME = "GrabIt"
