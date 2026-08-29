@@ -1,0 +1,57 @@
+GrabIt - Third-Party Notices
+============================
+
+GrabIt is distributed with the following third-party components. Each remains
+under its own license, reproduced or referenced below.
+
+
+1. FFmpeg
+---------
+Website: https://ffmpeg.org
+Build:   "release-essentials" static Windows build by Gyan Doshi
+         https://www.gyan.dev/ffmpeg/builds/
+
+License: GNU General Public License, version 3 or later (GPLv3+).
+
+This build is GPL-licensed because it includes GPL components (such as
+libx264). The full license text is available at:
+    https://www.gnu.org/licenses/gpl-3.0.txt
+
+WRITTEN OFFER FOR SOURCE CODE
+You may obtain the complete corresponding source code for the FFmpeg binary
+distributed with GrabIt from:
+    FFmpeg source:     https://git.ffmpeg.org/ffmpeg.git
+    Build scripts:     https://github.com/GyanD/codexffmpeg
+
+FFmpeg is invoked by GrabIt as a separate executable process.
+
+
+2. PyQt6
+--------
+Website: https://www.riverbankcomputing.com/software/pyqt/
+License: GNU General Public License, version 3 (GPLv3), unless used under a
+         separately purchased Riverbank commercial license.
+         https://www.gnu.org/licenses/gpl-3.0.txt
+
+PyQt6 links the Qt libraries, which are used under the GNU Lesser General
+Public License v3 (LGPLv3):
+    https://www.qt.io/licensing/
+    https://www.gnu.org/licenses/lgpl-3.0.txt
+
+
+3. yt-dlp
+---------
+Website: https://github.com/yt-dlp/yt-dlp
+License: The Unlicense (public domain dedication)
+         https://unlicense.org/
+
+
+4. Python
+---------
+Website: https://www.python.org
+License: Python Software Foundation License, version 2
+         https://docs.python.org/3/license.html
+
+
+Trademarks and other rights in the above projects belong to their respective
+owners. GrabIt is not affiliated with, or endorsed by, any of them.

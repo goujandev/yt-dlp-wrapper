@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+build/
+dist/
+.venv/
+venv/
+vendor/ffmpeg.exe
+vendor/*.zip
+assets/
