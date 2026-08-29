@@ -129,7 +129,7 @@ def build_presets(info: dict) -> list:
             )
 
     if has_audio:
-        presets.append(Preset("Audio only (MP3)", "ba/b", audio_only=True))
+        presets.append(Preset("Audio only (MP3, 320 kbps)", "ba/b", audio_only=True))
 
     if not presets:
         raise GrabItError("No downloadable video or audio was found at that link.")
@@ -238,7 +238,7 @@ def download(
             {
                 "key": "FFmpegExtractAudio",
                 "preferredcodec": "mp3",
-                "preferredquality": "192",
+                "preferredquality": "320",
             }
         ]
     else:
