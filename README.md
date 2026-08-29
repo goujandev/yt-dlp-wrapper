@@ -6,6 +6,8 @@ flags, no install steps.
 
 Paste a link → pick a quality → pick a folder → Download.
 
+Licensed under [GPL-3.0](LICENSE).
+
 ## What v1 does
 
 - Paste a video URL and fetch the qualities that link actually offers
@@ -22,8 +24,12 @@ Deliberately **not** in v1: playlists, subtitles, trimming.
 
 ## Using the built app
 
-Grab `GrabIt.exe` and double-click it. ffmpeg is bundled inside, so there is
-nothing else to install.
+Grab `GrabIt.exe` and double-click it. Python, Qt, yt-dlp and ffmpeg are all
+bundled inside, so there is nothing else to install.
+
+The exe is unsigned, so Windows shows a **"Windows protected your PC"** screen
+the first time. Click **More info -> Run anyway**. First launch takes a few
+seconds while it unpacks.
 
 ## Running from source
 
@@ -64,14 +70,14 @@ runs PyInstaller. The result is a single self-contained file:
 dist\GrabIt.exe
 ```
 
-Roughly 120 MB, because it contains Python, PyQt6, yt-dlp and ffmpeg.
+Roughly 80 MB, because it contains Python, PyQt6, yt-dlp and ffmpeg.
 
 Options:
 
 | Flag | Effect |
 | --- | --- |
 | `--clean` | delete `build/` and `dist/` first |
-| `--no-ffmpeg` | skip the ffmpeg download; produces a ~45 MB exe that needs ffmpeg on the user's machine |
+| `--no-ffmpeg` | skip the ffmpeg download; produces a much smaller exe that needs ffmpeg on the user's machine |
 
 To run PyInstaller directly instead:
 
@@ -96,21 +102,52 @@ The spec bundles `vendor/ffmpeg.exe` if it is present and warns if it is not.
   the real fix; a `--onedir` build (drop `runtime_tmpdir`, use `COLLECT`) trips
   it less often.
 
-## Licensing (read before sharing the exe)
+## Releasing
 
-GrabIt bundles GPL-licensed components, so if you distribute `GrabIt.exe` to
-anyone else:
+1. `python build.py --clean`
+2. Check `dist/` contains **GrabIt.exe** and **THIRD-PARTY-NOTICES.txt**
+3. Tag and push: `git tag v1.0.0 && git push origin v1.0.0`
+4. Create the GitHub release and attach **both** files from `dist/`
 
-- Ship `THIRD-PARTY-NOTICES.txt` alongside the exe (it is also bundled inside).
-  It carries ffmpeg's GPLv3 notice and the written offer for its source.
-- **PyQt6 is GPLv3 too.** Unlike ffmpeg, it is linked into GrabIt rather than
-  run as a separate process — so distributing this build obliges you to release
-  GrabIt's own source under the GPL. Using it privately imposes nothing.
+Attaching the notices file matters — it is what keeps the GPL ffmpeg binary
+inside the exe properly licensed. Bump `__version__` in `grabit/__init__.py`
+when you cut a new version.
 
-To distribute GrabIt without opening its source, either buy a Riverbank
-commercial PyQt licence, or port the UI to **PySide6** (LGPLv3), which permits
-closed-source distribution. The port is mostly import renames, as `ui.py` and
-`worker.py` use no PyQt-specific APIs.
+Tell people the first launch shows a SmartScreen warning (the exe is unsigned):
+**More info -> Run anyway**. Signing is the only real fix.
+
+## License
+
+GrabIt is licensed under the **GNU General Public License v3.0** - see
+[LICENSE](LICENSE).
+
+It has to be. GrabIt links PyQt6, which is GPLv3, so any distributed build must
+also be GPLv3 and ship its source. Publishing this repository satisfies that.
+
+To relicense GrabIt under something permissive you would need to drop PyQt6 -
+porting `ui.py` and `worker.py` to **PySide6** (LGPLv3) is mostly import
+renames, since neither uses PyQt-specific APIs - or buy a Riverbank commercial
+PyQt licence.
+
+### Bundled components
+
+`THIRD-PARTY-NOTICES.txt` ships inside the exe and next to it. It covers:
+
+| Component | License |
+| --- | --- |
+| FFmpeg (gyan.dev essentials build) | GPLv3+ |
+| PyQt6 / Qt6 | GPLv3 / LGPLv3 |
+| yt-dlp | The Unlicense |
+| Python | PSF License v2 |
+
+FFmpeg is run as a separate process, so only its own binary is covered by its
+license.
+
+### A note on use
+
+GrabIt is a front-end for yt-dlp; it does not host, bypass, or decrypt
+anything. Downloading may still breach a site's terms of service or copyright
+law depending on the content and your country. That is on the person using it.
 
 ## Project layout
 
