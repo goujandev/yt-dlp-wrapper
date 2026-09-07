@@ -494,9 +494,13 @@ class MainWindow(QMainWindow):
         if not path or not os.path.isfile(path):
             return self.on_open_folder()
         if os.name == "nt":
-            # Only explorer can select a file; QDesktopServices cannot.
-            # It exits non-zero even on success, so the result is not checked.
-            subprocess.Popen(["explorer", f"/select,{os.path.normpath(path)}"])
+            # Only explorer can select a file; QDesktopServices cannot. The
+            # command line is built by hand because explorer wants the quotes
+            # around the path alone - /select,"C:\dir\file" - while passing a
+            # list quotes the whole argument and silently opens the wrong
+            # folder for any name containing a space.
+            # It also exits non-zero on success, so the result is not checked.
+            subprocess.Popen(f'explorer /select,"{os.path.normpath(path)}"')
             return None
         return self.on_open_folder()
 
