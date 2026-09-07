@@ -93,7 +93,10 @@ def _friendly_error(exc: Exception) -> str:
     if "http error 404" in lowered:
         return "That page could not be found (404). Double-check the link."
     if "http error 403" in lowered:
-        return "The site refused the download (403). It may be blocking automated access."
+        return (
+            "The site refused the download (403). This is usually temporary - "
+            "wait a moment and try again."
+        )
     if "no space left" in lowered or "not enough space" in lowered:
         return "The drive is out of space. Free some room or pick another folder."
     if "permission denied" in lowered or "access is denied" in lowered:
