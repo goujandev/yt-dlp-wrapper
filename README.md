@@ -156,6 +156,8 @@ run_grabit.py        launcher / PyInstaller entry point
 grabit/
   main.py            app bootstrap, Windows console suppression
   ui.py              MainWindow — widgets and signal wiring only
+  theme.py           palette, the three type roles, the global stylesheet
+  widgets.py         the blocky pieces Qt does not provide
   worker.py          QThread wrappers: ProbeWorker, DownloadWorker
   downloader.py      yt-dlp logic (Qt-free), presets, error translation
   ffmpeg_tools.py    finding ffmpeg
@@ -167,6 +169,27 @@ build.py             fetch ffmpeg + build in one command
 vendor/              ffmpeg.exe lands here (gitignored)
 ```
 
-The split matters for one reason: `downloader.py` knows nothing about Qt and
+## The look
+
+Flat, dark, and blocky: a browser layout — tab strip, toolbar, page — drawn in
+the Arch Linux palette. Nothing is rounded, surfaces are separated by 1px
+hairlines rather than shadows, and the one accent (Arch blue `#1793D1`) is spent
+only on state: the tab's top rule, a focused field's border, the selected row,
+the primary button.
+
+Two consequences show up in the code. Every colour and font decision lives in
+`theme.py` as one style sheet, so no widget carries its own styling. And because
+the style allows no floating system windows, `widgets.py` reimplements the two
+things Qt would otherwise float: the quality dropdown (`BlockSelect`, a menu
+built from our own rows) and message boxes (`BlockDialog`, a panel drawn over
+the page). The folder picker stays native — like a browser, GrabIt hands that
+one to the OS.
+
+Icons come from Segoe Fluent Icons or Segoe MDL2 Assets, whichever Windows
+provides; where neither exists the icon buttons fall back to text labels.
+
+## Why the modules split this way
+
+`downloader.py` knows nothing about Qt and
 `ui.py` never blocks. Every slow call — reading a link, downloading — happens on
 a `QThread` and reports back through signals, so the window stays responsive.

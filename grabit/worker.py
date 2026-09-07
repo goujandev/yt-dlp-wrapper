@@ -91,7 +91,7 @@ class DownloadWorker(QThread):
 
         state = status.get("status")
         if state == "finished":
-            self.progress.emit(100, "Stream downloaded")
+            self.progress.emit(100, "stream complete")
             return
         if state != "downloading":
             return
@@ -103,16 +103,18 @@ class DownloadWorker(QThread):
 
         speed_text = f"{_human_size(speed)}/s" if speed else "-- MB/s"
 
+        # Read on one monospace status line, so the parts are separated rather
+        # than described.
         if total:
             percent = int(downloaded * 100 / total)
             percent = max(0, min(100, percent))
             detail = (
-                f"{_human_size(downloaded)} of {_human_size(total)}  -  "
-                f"{speed_text}  -  {_human_eta(eta)} left"
+                f"{_human_size(downloaded)} / {_human_size(total)}  ·  "
+                f"{speed_text}  ·  {_human_eta(eta)} left"
             )
         else:
             percent = -1
-            detail = f"{_human_size(downloaded)} downloaded  -  {speed_text}"
+            detail = f"{_human_size(downloaded)}  ·  {speed_text}"
 
         self.progress.emit(percent, detail)
 

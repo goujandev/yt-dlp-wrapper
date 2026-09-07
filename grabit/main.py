@@ -52,13 +52,15 @@ def main() -> int:
     # Imported after the patch above so yt-dlp picks up the patched Popen.
     from PyQt6.QtWidgets import QApplication
 
-    from . import APP_NAME, ORG_NAME
+    from . import APP_NAME, ORG_NAME, theme
     from .ui import MainWindow, app_icon
 
     app = QApplication(sys.argv)
     app.setApplicationName(APP_NAME)
     app.setOrganizationName(ORG_NAME)
     app.setWindowIcon(app_icon())
+    # Fonts, palette and style sheet, before any widget is built.
+    theme.apply(app)
 
     window = MainWindow()
     window.show()

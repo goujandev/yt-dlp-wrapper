@@ -209,9 +209,9 @@ def download(
         name = status.get("postprocessor", "")
         if status.get("status") == "started":
             if name == "Merger":
-                on_log("Merging video and audio with ffmpeg...")
+                on_log("merging video and audio")
             elif name in ("FFmpegExtractAudio", "ExtractAudio"):
-                on_log("Converting to MP3 with ffmpeg...")
+                on_log("converting to mp3")
         elif status.get("status") == "finished":
             info = status.get("info_dict") or {}
             path = info.get("filepath") or info.get("_filename")
