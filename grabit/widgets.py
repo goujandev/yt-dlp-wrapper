@@ -15,6 +15,7 @@ from PyQt6.QtWidgets import (
     QLabel,
     QLineEdit,
     QPushButton,
+    QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
@@ -78,6 +79,35 @@ def action_button(text: str, kind: str = "") -> QPushButton:
         button.setObjectName(kind)
     button.setFixedHeight(theme.ROW_HEIGHT)
     return button
+
+
+class ElidedLabel(QLabel):
+    """A label that shrinks its text to fit rather than widening its row.
+
+    Elides in the middle, because the end of a file name carries the extension.
+    """
+
+    def __init__(self, name: str, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.setObjectName(name)
+        self._full = ""
+        # Ignored, so a long name never pushes the row wider than the window.
+        self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+
+    def set_full_text(self, text: str) -> None:
+        self._full = text
+        self.setToolTip(text)
+        self._elide()
+
+    def resizeEvent(self, event) -> None:  # noqa: N802 - Qt naming
+        super().resizeEvent(event)
+        self._elide()
+
+    def _elide(self) -> None:
+        room = max(0, self.width() - 2)
+        self.setText(
+            self.fontMetrics().elidedText(self._full, Qt.TextElideMode.ElideMiddle, room)
+        )
 
 
 class Omnibox(QFrame):

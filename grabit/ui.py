@@ -9,17 +9,21 @@ from __future__ import annotations
 
 import html
 import os
+import subprocess
 
 from PyQt6.QtCore import QSettings, QStandardPaths, Qt, QUrl
 from PyQt6.QtGui import QDesktopServices, QFontMetrics, QIcon
 from PyQt6.QtWidgets import (
+    QApplication,
     QFileDialog,
+    QFrame,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QMainWindow,
     QPlainTextEdit,
     QProgressBar,
+    QPushButton,
     QVBoxLayout,
     QWidget,
 )
@@ -30,18 +34,22 @@ from .resources import WINDOW_ICON, resource_path
 from .widgets import (
     BlockDialog,
     BlockSelect,
+    ElidedLabel,
     Omnibox,
     action_button,
     icon_button,
+    icon_label,
     rule,
     section_label,
 )
-from .worker import DownloadWorker, ProbeWorker
+from .worker import DownloadWorker, ProbeWorker, human_size
 
 STRIP_HEIGHT = 34
 TAB_MAX_WIDTH = 360
 TAB_PADDING = 28  # the 14px each side the style sheet gives the tab
 NEW_TAB = "New download"
+RESULT_HEIGHT = 38
+TASKBAR_FLASH_MS = 3000
 
 # Log tags are a fixed-width first column; the colour carries the severity.
 LOG_TAG_WIDTH = 7
@@ -190,6 +198,7 @@ class MainWindow(QMainWindow):
         # The numbers live in the status line below, in monospace.
         self.progress_bar.setTextVisible(False)
         column.addWidget(self.progress_bar)
+        column.addWidget(self._build_result())
 
         column.addSpacing(8)
         self.status_label = QLabel("ready")
@@ -208,6 +217,53 @@ class MainWindow(QMainWindow):
 
         self._page = page
         return page
+
+    def _build_result(self) -> QWidget:
+        """The finished file. Hidden until there is one, and it replaces the bar."""
+        result = QFrame()
+        result.setObjectName("result")
+        result.setFixedHeight(RESULT_HEIGHT)
+        result.setVisible(False)
+
+        row = QHBoxLayout(result)
+        row.setContentsMargins(0, 0, 8, 0)
+        row.setSpacing(0)
+        row.addWidget(icon_label(theme.ICON_DONE, "resultIcon"))
+
+        self.result_name = ElidedLabel("resultName")
+        row.addWidget(self.result_name, 1)
+
+        self.result_size = QLabel("")
+        self.result_size.setObjectName("resultSize")
+        row.addWidget(self.result_size)
+
+        self.reveal_button = QPushButton("Show in folder")
+        self.reveal_button.setObjectName("reveal")
+        self.reveal_button.setFixedHeight(26)
+        self.reveal_button.clicked.connect(self.on_reveal)
+        row.addWidget(self.reveal_button)
+
+        self._result = result
+        self._result_path = ""
+        return result
+
+    def _show_result(self, path: str) -> None:
+        self._result_path = path
+        self.result_name.set_full_text(os.path.basename(path))
+        try:
+            self.result_size.setText(human_size(os.path.getsize(path)))
+        except OSError:
+            self.result_size.setText("")
+        self.progress_bar.setVisible(False)
+        self._result.setVisible(True)
+
+    def _clear_result(self) -> None:
+        """Back to the in-flight view: the bar returns, the finished file goes."""
+        self._result_path = ""
+        self._result.setVisible(False)
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(0)
+        self.progress_bar.setVisible(True)
 
     def showEvent(self, event) -> None:  # noqa: N802 - Qt naming
         super().showEvent(event)
@@ -309,6 +365,7 @@ class MainWindow(QMainWindow):
             self.quality_select.clear()
             self.detail_label.setVisible(False)
             self.set_tab_title(NEW_TAB)
+            self._clear_result()
         self._update_buttons()
 
     def on_browse(self) -> None:
@@ -386,6 +443,7 @@ class MainWindow(QMainWindow):
 
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
+        self._clear_result()
         self.set_status("starting")
         self.log(preset.label, "get")
 
@@ -416,15 +474,36 @@ class MainWindow(QMainWindow):
     def on_download_ok(self, path: str) -> None:
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(100)
-        if path:
-            self.set_status(f"done  ·  {os.path.basename(path)}")
+        self.set_status("done")
+        if path and os.path.isfile(path):
+            self._show_result(path)
             self.log(path, "save")
         else:
-            self.set_status("done")
+            self.log("finished, but the saved file could not be located", "warn")
+
+        # The window is usually in the background by the time a download ends,
+        # so flash the taskbar. Qt makes this a no-op when it is already active.
+        if not self.isActiveWindow():
+            app = QApplication.instance()
+            if app is not None:
+                app.alert(self, TASKBAR_FLASH_MS)
+
+    def on_reveal(self) -> None:
+        """Open the folder with the finished file selected."""
+        path = self._result_path
+        if not path or not os.path.isfile(path):
+            return self.on_open_folder()
+        if os.name == "nt":
+            # Only explorer can select a file; QDesktopServices cannot.
+            # It exits non-zero even on success, so the result is not checked.
+            subprocess.Popen(["explorer", f"/select,{os.path.normpath(path)}"])
+            return None
+        return self.on_open_folder()
 
     def on_download_failed(self, message: str) -> None:
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
+        self._clear_result()
         self.set_status("failed")
         self.log(message, "error")
         self._notice("danger", "download failed", message)
@@ -432,6 +511,7 @@ class MainWindow(QMainWindow):
     def on_download_cancelled(self) -> None:
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
+        self._clear_result()
         self.set_status("cancelled")
         self.log("partial files removed", "cancel")
 

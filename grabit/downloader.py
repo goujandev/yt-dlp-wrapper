@@ -203,11 +203,17 @@ def download(
         if status.get("status") == "finished":
             finished["path"] = status.get("filename", "") or finished["path"]
 
+    # yt-dlp starts a postprocessor once per stream, so a merge or an audio
+    # extraction can announce itself several times for one download. The user
+    # only needs to be told the stage began.
+    announced: set[str] = set()
+
     def postprocessor_hook(status: dict) -> None:
         if is_cancelled():
             raise DownloadCancelled("Cancelled by user.")
         name = status.get("postprocessor", "")
-        if status.get("status") == "started":
+        if status.get("status") == "started" and name not in announced:
+            announced.add(name)
             if name == "Merger":
                 on_log("merging video and audio")
             elif name in ("FFmpegExtractAudio", "ExtractAudio"):

@@ -54,6 +54,7 @@ ICON_LINK = chr(0xE71B)          # link
 ICON_FOLDER = chr(0xE8B7)        # folder
 ICON_OPEN = chr(0xE8A7)          # open in a new window
 ICON_CHEVRON = chr(0xE70D)       # chevron down
+ICON_DONE = chr(0xE73E)          # check mark
 
 UI_SIZE = 13
 MONO_SIZE = 12
@@ -278,6 +279,44 @@ QProgressBar {
     max-height: 8px;
 }
 QProgressBar::chunk { background-color: $accent; }
+
+/* The finished download. Takes the progress bar's place rather than sitting
+   beside it, so only one of the two is ever on screen and the accent does not
+   end up spent twice on the same state. */
+QFrame#result {
+    background-color: $raised;
+    border: 1px solid $line;
+    border-left: 2px solid $accent;
+}
+QLabel#resultIcon {
+    background-color: transparent;
+    color: $text;
+    font-family: "$icon";
+    font-size: 14px;
+    padding: 0px 10px;
+}
+QLabel#resultName {
+    background-color: transparent;
+    color: $text;
+    font-family: "$mono";
+    font-size: ${mono_size}px;
+}
+QLabel#resultSize {
+    background-color: transparent;
+    color: $muted;
+    font-family: "$mono";
+    font-size: ${mono_size}px;
+    padding: 0px 12px;
+}
+QPushButton#reveal {
+    background-color: $surface;
+    border: 1px solid $strong;
+    color: $text_2;
+    padding: 0px 12px;
+    font-size: 12px;
+}
+QPushButton#reveal:hover { background-color: $hover; color: $text; }
+QPushButton#reveal:pressed { background-color: $pressed; }
 
 /* --------------------------------------------------------------------- rules */
 QFrame#rule {

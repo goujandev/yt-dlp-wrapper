@@ -15,7 +15,8 @@ from . import downloader
 from .downloader import DownloadCancelled, GrabItError, Preset, VideoInfo
 
 
-def _human_size(num_bytes) -> str:
+def human_size(num_bytes) -> str:
+    """Bytes as a short human string. Shared with the UI, which shows file sizes."""
     if not num_bytes:
         return "?"
     value = float(num_bytes)
@@ -101,7 +102,7 @@ class DownloadWorker(QThread):
         speed = status.get("speed")
         eta = status.get("eta")
 
-        speed_text = f"{_human_size(speed)}/s" if speed else "-- MB/s"
+        speed_text = f"{human_size(speed)}/s" if speed else "-- MB/s"
 
         # Read on one monospace status line, so the parts are separated rather
         # than described.
@@ -109,12 +110,12 @@ class DownloadWorker(QThread):
             percent = int(downloaded * 100 / total)
             percent = max(0, min(100, percent))
             detail = (
-                f"{_human_size(downloaded)} / {_human_size(total)}  ·  "
+                f"{human_size(downloaded)} / {human_size(total)}  ·  "
                 f"{speed_text}  ·  {_human_eta(eta)} left"
             )
         else:
             percent = -1
-            detail = f"{_human_size(downloaded)}  ·  {speed_text}"
+            detail = f"{human_size(downloaded)}  ·  {speed_text}"
 
         self.progress.emit(percent, detail)
 
