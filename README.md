@@ -1,4 +1,4 @@
-# GrabIt
+# GrabIt.
 
 A small Windows desktop app that wraps [yt-dlp](https://github.com/yt-dlp/yt-dlp)
 and ffmpeg, so you can download a video by pasting a link — no terminal, no
